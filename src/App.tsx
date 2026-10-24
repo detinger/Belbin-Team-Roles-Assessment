@@ -5,6 +5,7 @@ import {
   BarChart3,
   BrainCircuit,
   Check,
+  ChevronDown,
   Lightbulb,
   LockKeyhole,
   Minus,
@@ -142,16 +143,22 @@ function LandingPage({
         <section className="hero section-shell">
           <div className="hero-copy">
             <div className="eyebrow"><Sparkles size={15} /> Eight-role team profile</div>
-            <h1>See how you make<br /><span>technology teams work.</span></h1>
+            <h1>
+              <span className="hero-title-lead">See how you make</span>
+              <span className="hero-title-accent">technology teams work.</span>
+            </h1>
             <p className="hero-lede">
               Discover the contribution patterns you bring to software delivery—then turn them into better decisions, stronger collaboration, and a practical next step.
             </p>
 
             <div className="context-picker">
               <label htmlFor="work-context">Your technology context</label>
-              <select id="work-context" value={context} onChange={(event) => onContextChange(event.target.value)}>
-                {contextOptions.map((option) => <option key={option}>{option}</option>)}
-              </select>
+              <div className="context-select">
+                <select id="work-context" value={context} onChange={(event) => onContextChange(event.target.value)}>
+                  {contextOptions.map((option) => <option key={option}>{option}</option>)}
+                </select>
+                <ChevronDown className="context-select-icon" size={18} strokeWidth={2.25} aria-hidden="true" />
+              </div>
             </div>
 
             <div className="hero-actions">

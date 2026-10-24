@@ -284,18 +284,29 @@ img {
 .hero-copy {
   position: relative;
   z-index: 4;
+  min-width: 0;
 }
 
 .hero h1 {
   margin: 24px 0 20px;
   max-width: 660px;
   color: #131b2d;
-  font-size: clamp(48px, 5.4vw, 76px);
+  font-size: clamp(48px, 4.45vw, 64px);
   line-height: 0.99;
   letter-spacing: -0.065em;
 }
 
-.hero h1 span {
+.hero-title-lead,
+.hero-title-accent {
+  display: block;
+}
+
+.hero-title-lead {
+  white-space: nowrap;
+}
+
+.hero-title-accent {
+  margin-top: 0.12em;
   color: transparent;
   background: linear-gradient(100deg, #285ff6, #7257e8 48%, #ee6e73);
   background-clip: text;
@@ -311,7 +322,8 @@ img {
 }
 
 .context-picker {
-  width: min(410px, 100%);
+  width: 100%;
+  max-width: 410px;
   margin-top: 28px;
 }
 
@@ -325,15 +337,50 @@ img {
   text-transform: uppercase;
 }
 
+.context-select {
+  position: relative;
+}
+
 .context-picker select {
+  appearance: none;
+  -webkit-appearance: none;
   width: 100%;
   height: 50px;
-  padding: 0 42px 0 14px;
+  padding: 0 48px 0 16px;
   border: 1px solid #dfe4ec;
   border-radius: 12px;
   color: #263148;
   background: white;
   box-shadow: 0 8px 20px rgba(36, 48, 74, 0.06);
+  cursor: pointer;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.context-picker select:hover {
+  border-color: #c7d1e3;
+  background: #fdfdff;
+}
+
+.context-picker select:focus-visible {
+  border-color: #7e9df8;
+  outline: 3px solid rgba(40, 95, 246, 0.16);
+  outline-offset: 1px;
+  box-shadow: 0 10px 24px rgba(36, 48, 74, 0.09);
+}
+
+.context-select-icon {
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  color: #657087;
+  pointer-events: none;
+  transform: translateY(-50%);
+  transition: color 160ms ease, transform 160ms ease;
+}
+
+.context-select:hover .context-select-icon,
+.context-select:focus-within .context-select-icon {
+  color: var(--blue);
 }
 
 .hero-actions {
@@ -1886,6 +1933,7 @@ img {
 
 @media (max-width: 420px) {
   .hero h1 { font-size: 40px; }
+  .hero-title-lead { white-space: normal; }
   .hero-visual { height: 365px; }
   .hero-core { width: 116px; height: 116px; }
   .hero-core strong { font-size: 15px; }
