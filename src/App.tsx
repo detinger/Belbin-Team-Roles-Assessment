@@ -1,446 +1,735 @@
-import React, { useState, useMemo } from 'react';
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
-import { ChevronRight, ChevronLeft, CheckCircle, AlertCircle, Info } from 'lucide-react';
-
-const questionnaire = [
-  {
-    title: "1. What I believe I can contribute to a team:",
-    questions: [
-      { id: 'a', text: "I think I can quickly see and take advantage of new opportunities", role: "RI" },
-      { id: 'b', text: "I can work well with a very wide range of people", role: "TW" },
-      { id: 'c', text: "Producing ideas is something I'm naturally good at", role: "PL" },
-      { id: 'd', text: "My ability rests in being able to draw people out whenever I sense they have something of value to contribute to goals of the group", role: "CO" },
-      { id: 'e', text: "My capacity to follow through has much to do with my personal effectiveness", role: "CF" },
-      { id: 'f', text: "I am ready to face temporary unpopularity if it leads to worthwhile results in the end", role: "SH" },
-      { id: 'g', text: "I can usually sense what is realistic and likely to work", role: "IMP" },
-      { id: 'h', text: "I can offer a well thought-out case for alternative courses of action without introducing bias or prejudice", role: "ME" }
-    ]
-  },
-  {
-    title: "2. If I have a possible shortcoming in teamwork, it could be that:",
-    questions: [
-      { id: 'a', text: "I am not at ease unless meetings are well structured and controlled and generally well conducted", role: "IMP" },
-      { id: 'b', text: "I am inclined to be too generous toward others who have a valid viewpoint that has not received enough attention", role: "CO" },
-      { id: 'c', text: "I have a tendency to talk too much once the group starts discussing new ideas", role: "RI" },
-      { id: 'd', text: "My objective outlook makes it difficult for me to join in readily and enthusiastically with colleagues", role: "ME" },
-      { id: 'e', text: "I am sometimes seen as forceful and authoritarian if there is a need to get something done", role: "SH" },
-      { id: 'f', text: "I find it difficult to lead from the front, perhaps because I am overresponsive to the atmosphere in the group", role: "TW" },
-      { id: 'g', text: "I easily get too caught up in ideas that occur to me and so lose track of what is happening", role: "PL" },
-      { id: 'h', text: "My colleagues tend to see me as someone who worries too much about details and the possibility that things may go wrong", role: "CF" }
-    ]
-  },
-  {
-    title: "3. When involved in a project with other people:",
-    questions: [
-      { id: 'a', text: "I have a talent for influencing people without putting them under pressure", role: "CO" },
-      { id: 'b', text: "My general vigilance prevents careless mistakes and omissions being made", role: "CF" },
-      { id: 'c', text: "I am ready to press for action to make sure that the meeting does not waste time or lose sight of the main objective", role: "SH" },
-      { id: 'd', text: "I can be counted on to contribute something original", role: "PL" },
-      { id: 'e', text: "I am always ready to support a good suggestion in the common interest", role: "TW" },
-      { id: 'f', text: "I am eager to look for the latest in new ideas and developments", role: "RI" },
-      { id: 'g', text: "I believe my capacity for judgment can help to bring about the right decisions", role: "ME" },
-      { id: 'h', text: "I can be relied upon to see that all essential work is organized", role: "IMP" }
-    ]
-  },
-  {
-    title: "4. My characteristic approach to group work is that:",
-    questions: [
-      { id: 'a', text: "I have a quiet interest in getting to know colleagues better", role: "TW" },
-      { id: 'b', text: "I am not reluctant to challenge the views of others or to hold a minority view myself", role: "SH" },
-      { id: 'c', text: "I can usually find a line of argument to refute unsound propositions", role: "ME" },
-      { id: 'd', text: "I think I have a talent for making things work once a plan has to be put into operation", role: "IMP" },
-      { id: 'e', text: "I have a tendency to avoid the obvious and to come up with the unexpected", role: "PL" },
-      { id: 'f', text: "I bring a touch of perfectionism to any job I undertake", role: "CF" },
-      { id: 'g', text: "I am ready to make use of contacts outside the group itself", role: "RI" },
-      { id: 'h', text: "While I am interested in hearing all views, I never hesitate to make up my mind once a decision has to be made", role: "CO" }
-    ]
-  },
-  {
-    title: "5. I gain satisfaction in a job because:",
-    questions: [
-      { id: 'a', text: "I enjoy analyzing situations and weighing all the possible choices", role: "ME" },
-      { id: 'b', text: "I am interested in finding practical solutions to problems", role: "IMP" },
-      { id: 'c', text: "I like to feel that I am fostering good working relationships", role: "TW" },
-      { id: 'd', text: "I can have a strong influence on decisions", role: "SH" },
-      { id: 'e', text: "I can meet people who may have something new to offer", role: "RI" },
-      { id: 'f', text: "I can get people to agree on a necessary course of action", role: "CO" },
-      { id: 'g', text: "I feel in my element if I can give a task my full attention", role: "CF" },
-      { id: 'h', text: "I like to find a field that stretches my imagination", role: "PL" }
-    ]
-  },
-  {
-    title: "6. If I am suddenly given a difficult task with limited time and unfamiliar people:",
-    questions: [
-      { id: 'a', text: "I would feel like going off into a corner in order to think up a way out of the impasse before developing a line of action", role: "PL" },
-      { id: 'b', text: "I would be ready to work with the person who showed the most positive approach", role: "TW" },
-      { id: 'c', text: "I would find some way of reducing the size of the task by establishing what different individuals might best contribute", role: "CO" },
-      { id: 'd', text: "My natural sense of urgency would help to ensure that we did not fall behind schedule", role: "CF" },
-      { id: 'e', text: "I believe I would keep cool and maintain my capacity to think straight", role: "ME" },
-      { id: 'f', text: "I would retain a steadiness of purpose in spite of the pressures", role: "IMP" },
-      { id: 'g', text: "I would be prepared to take a leadership role if I felt the group was making no progress", role: "SH" },
-      { id: 'h', text: "I would start discussions in the hope of stimulating new thoughts and getting things moving", role: "RI" }
-    ]
-  },
-  {
-    title: "7. With reference to the problems I experience when working in groups:",
-    questions: [
-      { id: 'a', text: "I am apt to show my impatience with those who are obstructing progress", role: "SH" },
-      { id: 'b', text: "Others may criticize me for being too analytical and not intuitive enough", role: "ME" },
-      { id: 'c', text: "My desire to make sure that work is done properly can slow things down", role: "CF" },
-      { id: 'd', text: "I tend to get bored rather easily and rely on one or two stimulating members to spark me", role: "RI" },
-      { id: 'e', text: "I find it difficult to get started unless the goals are clear", role: "IMP" },
-      { id: 'f', text: "I am sometimes poor at explaining and clarifying complex points that occur to me", role: "PL" },
-      { id: 'g', text: "I am aware that I sometimes demand things from others that I cannot do myself", role: "CO" },
-      { id: 'h', text: "I hesitate to get my points across when I encounter real opposition", role: "TW" }
-    ]
-  }
-];
-
-const roleDescriptions: Record<string, { name: string, description: string, strengths: string, weaknesses: string, dontBeSurprised: string }> = {
-  "RI": {
-    name: "Resource Investigator",
-    description: "Uses their inquisitive nature to find ideas to bring back to the team.",
-    strengths: "Outgoing, enthusiastic. Explores opportunities and develops contacts.",
-    weaknesses: "Might be over-optimistic, and can lose interest once the initial enthusiasm has passed.",
-    dontBeSurprised: "They might forget to follow up on a lead."
-  },
-  "TW": {
-    name: "Teamworker",
-    description: "Helps the team to gel, using their versatility to identify the work required and complete it on behalf of the team.",
-    strengths: "Co-operative, perceptive and diplomatic. Listens and averts friction.",
-    weaknesses: "Can be indecisive in crunch situations and tends to avoid confrontation.",
-    dontBeSurprised: "They might be hesitant to make unpopular decisions."
-  },
-  "CO": {
-    name: "Co-ordinator",
-    description: "Needed to focus on the team's objectives, draw out team members and delegate work appropriately.",
-    strengths: "Mature, confident, identifies talent. Clarifies goals.",
-    weaknesses: "Can be seen as manipulative and might offload their own share of the work.",
-    dontBeSurprised: "They might over-delegate, leaving themselves little work to do."
-  },
-  "PL": {
-    name: "Plant",
-    description: "Tends to be highly creative and good at solving problems in unconventional ways.",
-    strengths: "Creative, imaginative, free-thinking, generates ideas and solves difficult problems.",
-    weaknesses: "Might ignore incidentals, and may be too preoccupied to communicate effectively.",
-    dontBeSurprised: "They could be absent-minded or forgetful."
-  },
-  "ME": {
-    name: "Monitor Evaluator",
-    description: "Provides a logical eye, making impartial judgements where required and weighs up the team's options in a dispassionate way.",
-    strengths: "Sober, strategic and discerning. Sees all options and judges accurately.",
-    weaknesses: "Sometimes lacks the drive and ability to inspire others and can be overly critical.",
-    dontBeSurprised: "They could be slow to come to decisions."
-  },
-  "SH": {
-    name: "Shaper",
-    description: "Provides the necessary drive to ensure that the team keeps moving and does not lose focus or momentum.",
-    strengths: "Challenging, dynamic, thrives on pressure. Has the drive and courage to overcome obstacles.",
-    weaknesses: "Can be prone to provocation, and may sometimes offend people's feelings.",
-    dontBeSurprised: "They could risk becoming aggressive and bad-humoured in their attempts to get things done."
-  },
-  "IMP": {
-    name: "Implementer",
-    description: "Needed to plan a workable strategy and carry it out as efficiently as possible.",
-    strengths: "Practical, reliable, efficient. Turns ideas into actions and organises work that needs to be done.",
-    weaknesses: "Can be a bit inflexible and slow to respond to new possibilities.",
-    dontBeSurprised: "They might be slow to relinquish their plans in favour of positive changes."
-  },
-  "CF": {
-    name: "Completer Finisher",
-    description: "Most effectively used at the end of tasks to polish and scrutinise the work for errors, subjecting it to the highest standards of quality control.",
-    strengths: "Painstaking, conscientious, anxious. Searches out errors. Polishes and perfects.",
-    weaknesses: "Can be inclined to worry unduly, and reluctant to delegate.",
-    dontBeSurprised: "They could be accused of taking their perfectionism to extremes."
-  }
-};
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  BarChart3,
+  BrainCircuit,
+  Check,
+  Lightbulb,
+  LockKeyhole,
+  Minus,
+  Plus,
+  Printer,
+  RefreshCw,
+  Rocket,
+  ShieldCheck,
+  Sparkles,
+  Target,
+  UsersRound,
+} from 'lucide-react';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
+import {
+  deliveryStages,
+  questionnaire,
+  roleInfo,
+  roleOrder,
+  type RoleCode,
+} from './data';
 
 type Answers = Record<number, Record<string, number>>;
 
+type AssessmentResult = {
+  role: RoleCode;
+  score: number;
+  name: string;
+  shortName: string;
+  color: string;
+};
+
+type SavedDraft = {
+  answers: Answers;
+  step: number;
+  maxVisited: number;
+  context: string;
+  savedAt: string;
+};
+
+const STORAGE_KEY = 'team-signals-eight-role-draft-v1';
+
+const contextOptions = [
+  'Software engineering',
+  'Product & design',
+  'Data & AI',
+  'DevOps, SRE & platform',
+  'Cybersecurity',
+  'IT operations & support',
+  'Technology leadership',
+];
+
+const createEmptyAnswers = (): Answers =>
+  Object.fromEntries(
+    questionnaire.map((section, sectionIndex) => [
+      sectionIndex,
+      Object.fromEntries(section.questions.map((question) => [question.id, 0])),
+    ]),
+  );
+
+const loadDraft = (): SavedDraft | null => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as SavedDraft) : null;
+  } catch {
+    return null;
+  }
+};
+
+function Brand({ onHome }: { onHome?: () => void }) {
+  const content = (
+    <>
+      <span className="brand-mark" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </span>
+      <span className="brand-copy">
+        <strong>TeamSignals</strong>
+        <small>for technology teams</small>
+      </span>
+    </>
+  );
+
+  if (onHome) {
+    return (
+      <button type="button" className="brand brand-button" onClick={onHome} aria-label="Return to TeamSignals home">
+        {content}
+      </button>
+    );
+  }
+
+  return <div className="brand">{content}</div>;
+}
+
+function AppHeader({ label, onHome }: { label?: string; onHome?: () => void }) {
+  return (
+    <header className="app-header">
+      <div className="app-header-inner">
+        <Brand onHome={onHome} />
+        <div className="header-meta">
+          {label && <span className="header-status">{label}</span>}
+          <span className="privacy-note"><LockKeyhole size={14} /> Saved on this device</span>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function LandingPage({
+  context,
+  onContextChange,
+  onStart,
+  onResume,
+  resumeStep,
+}: {
+  context: string;
+  onContextChange: (context: string) => void;
+  onStart: () => void;
+  onResume: (() => void) | null;
+  resumeStep: number;
+}) {
+  return (
+    <div className="landing-page">
+      <AppHeader />
+      <main>
+        <section className="hero section-shell">
+          <div className="hero-copy">
+            <div className="eyebrow"><Sparkles size={15} /> Eight-role team profile</div>
+            <h1>See how you make<br /><span>technology teams work.</span></h1>
+            <p className="hero-lede">
+              Discover the contribution patterns you bring to software delivery—then turn them into better decisions, stronger collaboration, and a practical next step.
+            </p>
+
+            <div className="context-picker">
+              <label htmlFor="work-context">Your technology context</label>
+              <select id="work-context" value={context} onChange={(event) => onContextChange(event.target.value)}>
+                {contextOptions.map((option) => <option key={option}>{option}</option>)}
+              </select>
+            </div>
+
+            <div className="hero-actions">
+              <button className="primary-button" onClick={onResume ?? onStart}>
+                {onResume ? (resumeStep >= questionnaire.length ? 'View saved profile' : `Resume section ${resumeStep + 1}`) : 'Start my profile'}
+                <ArrowRight size={19} />
+              </button>
+              {onResume && (
+                <button className="text-button" onClick={onStart}>
+                  Start fresh
+                </button>
+              )}
+            </div>
+
+            <div className="hero-stats" aria-label="Assessment details">
+              <div><strong>7</strong><span>short sections</span></div>
+              <div><strong>8</strong><span>team roles</span></div>
+              <div><strong>~8</strong><span>minutes</span></div>
+            </div>
+          </div>
+
+          <div className="hero-visual" aria-label="A collection of team role illustrations">
+            <div className="hero-orbit orbit-one" />
+            <div className="hero-orbit orbit-two" />
+            <div className="hero-core">
+              <span>YOUR</span>
+              <strong>TEAM<br />SIGNAL</strong>
+              <small>8-role profile</small>
+            </div>
+            <img className="hero-role hero-role-ri" src={roleInfo.RI.image} alt="Resource Investigator role illustration" />
+            <img className="hero-role hero-role-pl" src={roleInfo.PL.image} alt="Plant role illustration" />
+            <img className="hero-role hero-role-co" src={roleInfo.CO.image} alt="Co-ordinator role illustration" />
+            <img className="hero-role hero-role-cf" src={roleInfo.CF.image} alt="Completer Finisher role illustration" />
+            <span className="float-pill pill-one">Explore</span>
+            <span className="float-pill pill-two">Connect</span>
+            <span className="float-pill pill-three">Deliver</span>
+          </div>
+        </section>
+
+        <section className="trust-strip section-shell" aria-label="Assessment principles">
+          <div><ShieldCheck size={19} /><span><strong>Behavior, not personality</strong> A snapshot of how you contribute right now.</span></div>
+          <div><BrainCircuit size={19} /><span><strong>Built for IT work</strong> Results mapped to the delivery lifecycle.</span></div>
+          <div><LockKeyhole size={19} /><span><strong>Private by design</strong> Your draft stays in this browser.</span></div>
+        </section>
+
+        <section className="how-it-works section-shell">
+          <div className="section-heading">
+            <div>
+              <span className="kicker">A clearer way to reflect</span>
+              <h2>From instinct to useful insight</h2>
+            </div>
+            <p>Distribute ten points in each section. Your choices build a profile of the eight contribution patterns you rely on most.</p>
+          </div>
+          <div className="feature-grid">
+            <article>
+              <span className="feature-number">01</span>
+              <div className="feature-icon blue"><Target /></div>
+              <h3>Prioritize what feels true</h3>
+              <p>Give more points to the statements that best reflect how you actually behave in teams.</p>
+            </article>
+            <article>
+              <span className="feature-number">02</span>
+              <div className="feature-icon violet"><BarChart3 /></div>
+              <h3>Read your contribution mix</h3>
+              <p>Compare your eight role scores with direct, accessible charts and practical interpretation.</p>
+            </article>
+            <article>
+              <span className="feature-number">03</span>
+              <div className="feature-icon coral"><Rocket /></div>
+              <h3>Apply it next sprint</h3>
+              <p>See where your strengths support delivery and choose one concrete behavior to practice.</p>
+            </article>
+          </div>
+        </section>
+
+        <section className="role-preview section-shell">
+          <div className="section-heading compact">
+            <div>
+              <span className="kicker">Your possible roles</span>
+              <h2>Eight ways to move a team forward</h2>
+            </div>
+          </div>
+          <div className="role-preview-grid">
+            {roleOrder.map((code) => {
+              const role = roleInfo[code];
+              return (
+                <article className="role-preview-card" key={code}>
+                  <div style={{ background: role.softColor }}><img src={role.image} alt="" /></div>
+                  <span>{role.category}</span>
+                  <h3>{role.name}</h3>
+                  <p>{role.shortName}</p>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      </main>
+      <footer className="site-footer section-shell">
+        <Brand />
+        <p>Eight-role team contribution assessment for modern technology teams.</p>
+      </footer>
+    </div>
+  );
+}
+
+function PointsRing({ total }: { total: number }) {
+  const remaining = 10 - total;
+  const angle = Math.min(total, 10) * 36;
+  return (
+    <div
+      className={`points-ring ${remaining === 0 ? 'complete' : ''}`}
+      style={{ '--ring-angle': `${angle}deg` } as CSSProperties}
+      aria-label={`${remaining} points remaining`}
+    >
+      <div>
+        <strong>{remaining}</strong>
+        <span>{remaining === 1 ? 'point left' : 'points left'}</span>
+      </div>
+    </div>
+  );
+}
+
+function AssessmentPage({
+  step,
+  maxVisited,
+  answers,
+  onSetAnswer,
+  onStepChange,
+  onContinue,
+  onHome,
+}: {
+  step: number;
+  maxVisited: number;
+  answers: Answers;
+  onSetAnswer: (questionId: string, value: number) => void;
+  onStepChange: (step: number) => void;
+  onContinue: () => void;
+  onHome: () => void;
+}) {
+  const section = questionnaire[step];
+  const sectionAnswers = answers[step];
+  const total = Object.values(sectionAnswers).reduce((sum, score) => sum + score, 0);
+  const isComplete = total === 10;
+  const completedSections = questionnaire.filter((_, index) =>
+    Object.values(answers[index]).reduce((sum, score) => sum + score, 0) === 10,
+  ).length;
+
+  return (
+    <div className="assessment-page">
+      <AppHeader label={`Section ${step + 1} of ${questionnaire.length}`} onHome={onHome} />
+      <main className="assessment-shell">
+        <aside className="assessment-sidebar">
+          <div className="sidebar-sticky">
+            <span className="kicker">Your progress</span>
+            <h2>{completedSections} of {questionnaire.length} sections complete</h2>
+            <div className="section-nav" aria-label="Assessment sections">
+              {questionnaire.map((item, index) => {
+                const sectionTotal = Object.values(answers[index]).reduce((sum, score) => sum + score, 0);
+                const canVisit = index <= maxVisited;
+                return (
+                  <button
+                    key={item.eyebrow}
+                    className={`${index === step ? 'active' : ''} ${sectionTotal === 10 ? 'done' : ''}`}
+                    onClick={() => canVisit && onStepChange(index)}
+                    disabled={!canVisit}
+                    aria-label={`Section ${index + 1}: ${item.eyebrow}${sectionTotal === 10 ? ', complete' : ''}`}
+                  >
+                    <span>{sectionTotal === 10 ? <Check size={14} /> : index + 1}</span>
+                    <div><strong>{item.eyebrow}</strong><small>{sectionTotal}/10 points</small></div>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="autosave-callout"><LockKeyhole size={16} /><span>Your progress saves automatically on this device.</span></div>
+          </div>
+        </aside>
+
+        <section className="question-panel">
+          <div className="question-header">
+            <div>
+              <span className="kicker">Section {step + 1} · {section.eyebrow}</span>
+              <h1>{section.title}</h1>
+              <p>Distribute exactly 10 points. Give more to statements that sound most like you.</p>
+            </div>
+            <PointsRing total={total} />
+          </div>
+
+          <div className="mobile-points-bar">
+            <span>{10 - total} points left</span>
+            <div><span style={{ width: `${total * 10}%` }} /></div>
+            <strong>{total}/10</strong>
+          </div>
+
+          <div className="question-list">
+            {section.questions.map((question, index) => {
+              const value = sectionAnswers[question.id] ?? 0;
+              const canIncrease = total < 10 && value < 10;
+              return (
+                <article className={`question-row ${value > 0 ? 'has-value' : ''}`} key={question.id}>
+                  <span className="question-index">{String(index + 1).padStart(2, '0')}</span>
+                  <label htmlFor={`question-${step}-${question.id}`}>{question.text}</label>
+                  <div className="point-stepper">
+                    <button
+                      type="button"
+                      onClick={() => onSetAnswer(question.id, value - 1)}
+                      disabled={value === 0}
+                      aria-label={`Remove one point from statement ${index + 1}`}
+                    ><Minus size={16} /></button>
+                    <input
+                      id={`question-${step}-${question.id}`}
+                      type="number"
+                      min="0"
+                      max="10"
+                      inputMode="numeric"
+                      value={value}
+                      onChange={(event) => onSetAnswer(question.id, Number(event.target.value))}
+                      aria-label={`Points for: ${question.text}`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => onSetAnswer(question.id, value + 1)}
+                      disabled={!canIncrease}
+                      aria-label={`Add one point to statement ${index + 1}`}
+                    ><Plus size={16} /></button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+
+          <div className="assessment-actions">
+            <button className="secondary-button" onClick={() => onStepChange(step - 1)} disabled={step === 0}>
+              <ArrowLeft size={18} /> Back
+            </button>
+            <div className={`completion-message ${isComplete ? 'ready' : ''}`} aria-live="polite">
+              {isComplete ? <><Check size={16} /> 10 points assigned</> : `${10 - total} points still to assign`}
+            </div>
+            <button className="primary-button" onClick={onContinue} disabled={!isComplete}>
+              {step === questionnaire.length - 1 ? 'Reveal my profile' : 'Continue'} <ArrowRight size={18} />
+            </button>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}
+
+function ScoreTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: AssessmentResult }> }) {
+  if (!active || !payload?.length) return null;
+  const item = payload[0].payload;
+  return (
+    <div className="chart-tooltip">
+      <strong>{item.name}</strong>
+      <span>{item.score} of 70 points</span>
+    </div>
+  );
+}
+
+function ResultPage({
+  results,
+  context,
+  onRetake,
+  onHome,
+}: {
+  results: AssessmentResult[];
+  context: string;
+  onRetake: () => void;
+  onHome: () => void;
+}) {
+  const topRoles = results.slice(0, 3);
+  const maxScore = results[0].score;
+  const leaders = results.filter((result) => result.score === maxScore);
+  const headline = leaders.length > 1
+    ? `${leaders.map((item) => item.shortName).join(' + ')} lead your profile`
+    : `You lead as an ${topRoles[0].shortName}`;
+
+  const categoryScores = [
+    { name: 'Connect', label: 'People roles', color: '#22B8CF', roles: ['RI', 'TW', 'CO'] as RoleCode[] },
+    { name: 'Think', label: 'Thinking roles', color: '#8668F4', roles: ['PL', 'ME'] as RoleCode[] },
+    { name: 'Deliver', label: 'Action roles', color: '#F27469', roles: ['SH', 'IMP', 'CF'] as RoleCode[] },
+  ].map((category) => ({
+    ...category,
+    value: category.roles.reduce((sum, code) => sum + (results.find((result) => result.role === code)?.score ?? 0), 0),
+  }));
+
+  return (
+    <div className="results-page">
+      <AppHeader label="Profile complete" onHome={onHome} />
+      <main className="results-shell">
+        <section className="results-hero">
+          <div className="results-hero-copy">
+            <span className="eyebrow"><Sparkles size={15} /> Your team signal</span>
+            <h1>{headline}</h1>
+            <p>
+              Your strongest contributions combine <strong>{topRoles[0].name}</strong>, <strong>{topRoles[1].name}</strong>, and <strong>{topRoles[2].name}</strong> behaviors in a {context.toLowerCase()} context.
+            </p>
+            <div className="results-actions">
+              <button className="primary-button" onClick={() => window.print()}><Printer size={17} /> Print profile</button>
+              <button className="secondary-button" onClick={onRetake}><RefreshCw size={17} /> Retake</button>
+            </div>
+          </div>
+          <div className="top-role-art" style={{ '--role-color': roleInfo[topRoles[0].role].color, '--role-soft': roleInfo[topRoles[0].role].softColor } as CSSProperties}>
+            <span className="rank-badge">TOP ROLE · {topRoles[0].role}</span>
+            <img src={roleInfo[topRoles[0].role].image} alt={`${topRoles[0].name} illustration`} />
+            <div><strong>{topRoles[0].score}</strong><span>of 70 points</span></div>
+          </div>
+        </section>
+
+        <section className="results-grid profile-overview">
+          <article className="panel score-panel">
+            <div className="panel-heading">
+              <div><span className="kicker">Full profile</span><h2>Your role distribution</h2></div>
+              <span className="panel-note">Fixed 0–70 scale</span>
+            </div>
+            <div className="score-chart" role="img" aria-label="Horizontal bar chart showing all eight role scores">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={results} layout="vertical" margin={{ top: 6, right: 24, left: 6, bottom: 4 }}>
+                  <CartesianGrid stroke="#E7EAF0" horizontal={false} strokeDasharray="3 5" />
+                  <XAxis type="number" domain={[0, 70]} tick={{ fill: '#7A8497', fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="role" width={42} tick={{ fill: '#253047', fontSize: 12, fontWeight: 750 }} axisLine={false} tickLine={false} />
+                  <Tooltip content={<ScoreTooltip />} cursor={{ fill: '#F6F8FC' }} />
+                  <Bar dataKey="score" radius={[0, 8, 8, 0]} barSize={18}>
+                    {results.map((entry) => <Cell key={entry.role} fill={entry.color} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="score-table-wrap">
+              <table className="sr-score-table">
+                <caption>Exact team role scores</caption>
+                <thead><tr><th>Role</th><th>Score</th></tr></thead>
+                <tbody>{results.map((result) => <tr key={result.role}><td>{result.name}</td><td>{result.score}</td></tr>)}</tbody>
+              </table>
+            </div>
+          </article>
+
+          <article className="panel balance-panel">
+            <div className="panel-heading">
+              <div><span className="kicker">Work style</span><h2>Where your energy goes</h2></div>
+            </div>
+            <p className="panel-intro">A simple view of how your scores group across people, thinking, and action-oriented contributions.</p>
+            <div className="balance-list">
+              {categoryScores.map((category) => (
+                <div className="balance-item" key={category.name}>
+                  <div><strong>{category.name}</strong><span>{category.label}</span><b>{category.value}</b></div>
+                  <div className="balance-track"><span style={{ width: `${(category.value / 70) * 100}%`, background: category.color }} /></div>
+                </div>
+              ))}
+            </div>
+            <div className="balance-note"><Lightbulb size={18} /><p>A lower category is not a flaw. It shows where complementary teammates can make the group more versatile.</p></div>
+          </article>
+        </section>
+
+        <section className="top-three-section">
+          <div className="section-heading compact">
+            <div><span className="kicker">Your strongest signals</span><h2>Top three roles</h2></div>
+            <p>These are contribution patterns—not fixed personality types. Use them as a starting point for better conversations.</p>
+          </div>
+          <div className="top-role-grid">
+            {topRoles.map((result, index) => {
+              const role = roleInfo[result.role];
+              return (
+                <article className="top-role-card" key={result.role} style={{ '--role-color': role.color, '--role-soft': role.softColor } as CSSProperties}>
+                  <div className="top-role-card-head">
+                    <span className="rank-number">0{index + 1}</span>
+                    <img src={role.image} alt={`${role.name} role illustration`} />
+                    <span className="score-pill">{result.score} pts</span>
+                  </div>
+                  <div className="top-role-card-body">
+                    <span className="role-category">{role.category} role · {role.code}</span>
+                    <h3>{role.name}</h3>
+                    <p>{role.description}</p>
+                    <div className="insight-block"><strong>In IT delivery</strong><span>{role.itContribution}</span></div>
+                    <div className="watchout-block"><strong>Watch for</strong><span>{role.weaknesses}</span></div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="panel lifecycle-panel">
+          <div className="panel-heading">
+            <div><span className="kicker">Applied to technology work</span><h2>Your software-delivery contribution map</h2></div>
+            <span className="panel-note">Top 3 roles</span>
+          </div>
+          <p className="panel-intro">Where each leading role is most likely to add value across a typical delivery lifecycle. This is guidance, not a measure of technical ability.</p>
+          <div className="heatmap" role="table" aria-label="Top role relevance across the software delivery lifecycle">
+            <div className="heatmap-row heatmap-header" role="row">
+              <span role="columnheader">Role</span>
+              {deliveryStages.map((stage) => <span role="columnheader" key={stage}>{stage}</span>)}
+            </div>
+            {topRoles.map((result) => {
+              const role = roleInfo[result.role];
+              return (
+                <div className="heatmap-row" role="row" key={result.role}>
+                  <span className="heatmap-role" role="rowheader"><i style={{ background: role.color }} /> {role.shortName}</span>
+                  {role.delivery.map((value, index) => (
+                    <span
+                      key={deliveryStages[index]}
+                      className={`heat-cell level-${value}`}
+                      style={{ '--heat-color': role.color } as CSSProperties}
+                      role="cell"
+                      aria-label={`${role.name}: ${deliveryStages[index]} relevance ${value} of 3`}
+                    ><b>{value === 3 ? 'High' : value === 2 ? 'Med' : 'Low'}</b></span>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+          <div className="heat-legend"><span><i className="level-1" /> Low</span><span><i className="level-2" /> Medium</span><span><i className="level-3" /> High</span></div>
+        </section>
+
+        <section className="action-section">
+          <div className="section-heading compact">
+            <div><span className="kicker">Make it practical</span><h2>Your next-sprint playbook</h2></div>
+          </div>
+          <div className="action-grid">
+            {topRoles.map((result, index) => {
+              const role = roleInfo[result.role];
+              return (
+                <article key={result.role} className="action-card">
+                  <div className="action-icon" style={{ color: role.color, background: role.softColor }}>{index === 0 ? <Rocket /> : index === 1 ? <UsersRound /> : <BrainCircuit />}</div>
+                  <span>TRY AS A {role.shortName.toUpperCase()}</span>
+                  <h3>{role.sprintAction}</h3>
+                  <p><strong>Best with:</strong> {role.collaboration}</p>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="all-roles-section">
+          <div className="section-heading compact">
+            <div><span className="kicker">Complete profile</span><h2>All eight roles</h2></div>
+            <p>Your lower-scoring roles are still available to you; they may simply take more effort or emerge in a different context.</p>
+          </div>
+          <div className="all-role-grid">
+            {results.map((result) => {
+              const role = roleInfo[result.role];
+              return (
+                <article className="all-role-card" key={result.role}>
+                  <div className="all-role-art" style={{ background: role.softColor }}><img src={role.image} alt="" /></div>
+                  <div className="all-role-copy">
+                    <span>{role.code} · {role.category}</span>
+                    <h3>{role.name}</h3>
+                    <p>{role.description}</p>
+                    <div><span style={{ width: `${(result.score / 70) * 100}%`, background: role.color }} /></div>
+                  </div>
+                  <strong>{result.score}</strong>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="results-footer-card">
+          <div><span className="kicker">One final thought</span><h2>A strong team is a mix, not a leaderboard.</h2></div>
+          <p>Share the language of your strengths, ask teammates what they experience, and use the differences to design better ways of working.</p>
+          <button className="secondary-button" onClick={onRetake}><RefreshCw size={17} /> Retake assessment</button>
+        </section>
+      </main>
+    </div>
+  );
+}
+
 export default function App() {
+  const savedDraft = useRef<SavedDraft | null>(loadDraft());
+  const [answers, setAnswers] = useState<Answers>(savedDraft.current?.answers ?? createEmptyAnswers());
   const [currentStep, setCurrentStep] = useState(-1);
-  const [answers, setAnswers] = useState<Answers>(() => {
-    const initial: Answers = {};
-    for (let i = 0; i < questionnaire.length; i++) {
-      initial[i] = {};
-      for (const q of questionnaire[i].questions) {
-        initial[i][q.id] = 0;
-      }
-    }
-    return initial;
-  });
+  const [resumeStep, setResumeStep] = useState(savedDraft.current?.step ?? -1);
+  const [maxVisited, setMaxVisited] = useState(savedDraft.current?.maxVisited ?? 0);
+  const [context, setContext] = useState(savedDraft.current?.context ?? contextOptions[0]);
 
-  const handleStart = () => setCurrentStep(0);
-
-  const handleInputChange = (sectionIndex: number, questionId: string, value: string) => {
-    const numValue = value === '' ? 0 : parseInt(value, 10);
-    if (isNaN(numValue) || numValue < 0 || numValue > 10) return;
-
-    setAnswers(prev => ({
-      ...prev,
-      [sectionIndex]: {
-        ...prev[sectionIndex],
-        [questionId]: numValue
-      }
-    }));
-  };
-
-  const getSectionTotal = (sectionIndex: number): number => {
-    const sectionAnswers = answers[sectionIndex] || {};
-    return Object.values(sectionAnswers as Record<string, number>).reduce((sum: number, val: number) => sum + val, 0);
-  };
-
-  const handleNext = () => {
-    if (getSectionTotal(currentStep) === 10) {
-      setCurrentStep(prev => prev + 1);
-    }
-  };
-
-  const handlePrev = () => {
-    setCurrentStep(prev => Math.max(0, prev - 1));
-  };
-
-  const calculateScores = () => {
-    const scores: Record<string, number> = {
-      RI: 0, TW: 0, CO: 0, PL: 0, ME: 0, SH: 0, IMP: 0, CF: 0
+  useEffect(() => {
+    if (currentStep < 0) return;
+    const draft: SavedDraft = {
+      answers,
+      step: currentStep,
+      maxVisited,
+      context,
+      savedAt: new Date().toISOString(),
     };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
+    setResumeStep(currentStep);
+  }, [answers, context, currentStep, maxVisited]);
 
-    for (let i = 0; i < questionnaire.length; i++) {
-      const section = questionnaire[i];
-      for (const q of section.questions) {
-        scores[q.role] += answers[i][q.id] || 0;
-      }
-    }
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentStep]);
 
-    return Object.entries(scores)
-      .map(([role, score]) => ({ role, score, name: roleDescriptions[role].name }))
-      .sort((a, b) => b.score - a.score);
+  const results = useMemo<AssessmentResult[]>(() => {
+    const scores = Object.fromEntries(roleOrder.map((role) => [role, 0])) as Record<RoleCode, number>;
+    questionnaire.forEach((section, sectionIndex) => {
+      section.questions.forEach((question) => {
+        scores[question.role] += answers[sectionIndex]?.[question.id] ?? 0;
+      });
+    });
+    return roleOrder
+      .map((role) => ({
+        role,
+        score: scores[role],
+        name: roleInfo[role].name,
+        shortName: roleInfo[role].shortName,
+        color: roleInfo[role].color,
+      }))
+      .sort((a, b) => b.score - a.score || roleOrder.indexOf(a.role) - roleOrder.indexOf(b.role));
+  }, [answers]);
+
+  const startFresh = () => {
+    const fresh = createEmptyAnswers();
+    setAnswers(fresh);
+    setMaxVisited(0);
+    setCurrentStep(0);
+    setResumeStep(0);
+  };
+
+  const resume = () => {
+    setCurrentStep(Math.max(0, resumeStep));
+  };
+
+  const setAnswer = (questionId: string, nextValue: number) => {
+    setAnswers((previous) => {
+      const sectionAnswers = previous[currentStep];
+      const otherTotal = Object.entries(sectionAnswers as Record<string, number>)
+        .filter(([id]) => id !== questionId)
+        .reduce((sum, [, value]) => sum + value, 0);
+      const safeValue = Number.isFinite(nextValue) ? Math.max(0, Math.min(10 - otherTotal, Math.round(nextValue))) : 0;
+      return {
+        ...previous,
+        [currentStep]: { ...sectionAnswers, [questionId]: safeValue },
+      };
+    });
+  };
+
+  const continueAssessment = () => {
+    const next = currentStep + 1;
+    setMaxVisited((previous) => Math.max(previous, next));
+    setCurrentStep(next);
+  };
+
+  const goToStep = (step: number) => {
+    if (step < 0 || step >= questionnaire.length || step > maxVisited) return;
+    setCurrentStep(step);
+  };
+
+  const retake = () => {
+    const shouldReset = window.confirm('Clear this profile and start a new assessment?');
+    if (!shouldReset) return;
+    localStorage.removeItem(STORAGE_KEY);
+    startFresh();
   };
 
   if (currentStep === -1) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 font-sans text-slate-900">
-        <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-8 md:p-12 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-indigo-950 mb-6">Belbin Team Roles</h1>
-          <p className="text-lg text-slate-600 mb-8 leading-relaxed">
-            Discover your natural behavioral strengths in a team setting. This test will help you identify which of the Belbin Team Roles you naturally gravitate towards.
-          </p>
-          <div className="bg-indigo-50 rounded-xl p-6 mb-10 text-left border border-indigo-100">
-            <h3 className="font-semibold text-indigo-900 mb-3 flex items-center gap-2">
-              <Info className="w-5 h-5" /> Guidelines to fill in the test
-            </h3>
-            <ul className="list-disc pl-5 space-y-2 text-indigo-800/80">
-              <li>There are 7 sections in total.</li>
-              <li>For each section, you have exactly <strong>10 points</strong> to distribute among the 8 sentences.</li>
-              <li>Distribute the points based on how well you think each sentence describes your behavior.</li>
-              <li>You can give all 10 points to one sentence, or spread them out (e.g., 4, 4, 2).</li>
-            </ul>
-          </div>
-          <button
-            onClick={handleStart}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-4 px-10 rounded-xl transition-all shadow-md hover:shadow-lg text-lg flex items-center justify-center mx-auto gap-2"
-          >
-            Start Questionnaire <ChevronRight className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
+      <LandingPage
+        context={context}
+        onContextChange={setContext}
+        onStart={startFresh}
+        onResume={resumeStep >= 0 ? resume : null}
+        resumeStep={resumeStep}
+      />
     );
   }
 
   if (currentStep >= questionnaire.length) {
-    const results = calculateScores();
-    const topRoles = results.slice(0, 3);
-
-    return (
-      <div className="min-h-screen bg-slate-50 p-6 md:p-12 font-sans text-slate-900">
-        <div className="max-w-5xl mx-auto space-y-8">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-indigo-950 mb-4">Your Team Role Profile</h1>
-            <p className="text-lg text-slate-600">Based on your responses, here is your Belbin Team Role distribution.</p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Chart Section */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col items-center justify-center">
-              <h3 className="text-xl font-semibold text-slate-800 mb-6">Role Distribution</h3>
-              <div className="w-full h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart cx="50%" cy="50%" outerRadius="70%" data={results}>
-                    <PolarGrid stroke="#e2e8f0" />
-                    <PolarAngleAxis dataKey="role" tick={{ fill: '#475569', fontSize: 14, fontWeight: 500 }} />
-                    <PolarRadiusAxis angle={30} domain={[0, 'dataMax + 5']} tick={{ fill: '#94a3b8' }} />
-                    <Radar name="Score" dataKey="score" stroke="#4f46e5" fill="#6366f1" fillOpacity={0.5} />
-                    <Tooltip 
-                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                      formatter={(value: number, name: string, props: any) => [value, props.payload.name]}
-                    />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            {/* Top Roles Section */}
-            <div className="space-y-6">
-              <h3 className="text-2xl font-bold text-slate-800">Your Top Roles</h3>
-              {topRoles.map((result, idx) => {
-                const roleInfo = roleDescriptions[result.role];
-                return (
-                  <div key={result.role} className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-2 h-full bg-indigo-500 opacity-80"></div>
-                    <div className="flex justify-between items-start mb-4">
-                      <h4 className="text-xl font-bold text-indigo-950">{roleInfo.name} <span className="text-slate-400 text-sm font-normal ml-2">({result.role})</span></h4>
-                      <span className="bg-indigo-100 text-indigo-800 text-sm font-bold px-3 py-1 rounded-full">Score: {result.score}</span>
-                    </div>
-                    <p className="text-slate-700 mb-4">{roleInfo.description}</p>
-                    <div className="space-y-2 text-sm">
-                      <p><strong className="text-emerald-700">Strengths:</strong> <span className="text-slate-600">{roleInfo.strengths}</span></p>
-                      <p><strong className="text-amber-700">Allowable weaknesses:</strong> <span className="text-slate-600">{roleInfo.weaknesses}</span></p>
-                      <p><strong className="text-indigo-700">Don't be surprised:</strong> <span className="text-slate-600">{roleInfo.dontBeSurprised}</span></p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* All Roles Reference */}
-          <div className="mt-16">
-            <h3 className="text-2xl font-bold text-slate-800 mb-6">All Roles Reference</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {results.map(result => {
-                const roleInfo = roleDescriptions[result.role];
-                return (
-                  <div key={result.role} className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex flex-col h-full">
-                    <div className="flex justify-between items-center mb-2">
-                      <h4 className="font-bold text-slate-800">{roleInfo.name}</h4>
-                      <span className="text-slate-500 font-mono text-sm">{result.score}</span>
-                    </div>
-                    <p className="text-xs text-slate-500 mb-3 flex-grow">{roleInfo.description}</p>
-                    <div className="w-full bg-slate-100 rounded-full h-1.5 mt-auto">
-                      <div className="bg-indigo-500 h-1.5 rounded-full" style={{ width: `${(result.score / 70) * 100}%` }}></div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-          
-          <div className="text-center mt-12 pt-8 border-t border-slate-200">
-            <button
-              onClick={() => {
-                setCurrentStep(-1);
-                setAnswers(() => {
-                  const initial: Answers = {};
-                  for (let i = 0; i < questionnaire.length; i++) {
-                    initial[i] = {};
-                    for (const q of questionnaire[i].questions) {
-                      initial[i][q.id] = 0;
-                    }
-                  }
-                  return initial;
-                });
-              }}
-              className="text-indigo-600 hover:text-indigo-800 font-medium"
-            >
-              Retake Questionnaire
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+    return <ResultPage results={results} context={context} onRetake={retake} onHome={() => setCurrentStep(-1)} />;
   }
 
-  const section = questionnaire[currentStep];
-  const currentTotal = getSectionTotal(currentStep);
-  const remaining = 10 - currentTotal;
-  const isValid = currentTotal === 10;
-
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center py-12 px-4 sm:px-6 font-sans text-slate-900">
-      <div className="w-full max-w-3xl">
-        {/* Progress Bar */}
-        <div className="mb-8">
-          <div className="flex justify-between text-sm font-medium text-slate-500 mb-2">
-            <span>Section {currentStep + 1} of {questionnaire.length}</span>
-            <span>{Math.round(((currentStep) / questionnaire.length) * 100)}% Completed</span>
-          </div>
-          <div className="w-full bg-slate-200 rounded-full h-2.5">
-            <div className="bg-indigo-600 h-2.5 rounded-full transition-all duration-300" style={{ width: `${((currentStep) / questionnaire.length) * 100}%` }}></div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100">
-          {/* Header */}
-          <div className="bg-indigo-950 p-6 md:p-8 text-white">
-            <h2 className="text-2xl md:text-3xl font-bold leading-tight">{section.title}</h2>
-          </div>
-
-          {/* Points Tracker */}
-          <div className={`sticky top-0 z-10 p-4 border-b flex items-center justify-between backdrop-blur-md bg-white/90 ${isValid ? 'border-emerald-200' : 'border-slate-200'}`}>
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-slate-500 uppercase tracking-wider">Points to assign</span>
-              <span className={`text-2xl font-bold ${remaining === 0 ? 'text-emerald-600' : remaining < 0 ? 'text-red-500' : 'text-indigo-600'}`}>
-                {remaining}
-              </span>
-            </div>
-            {isValid ? (
-              <div className="flex items-center text-emerald-600 text-sm font-medium gap-1.5 bg-emerald-50 px-3 py-1.5 rounded-full">
-                <CheckCircle className="w-4 h-4" /> Perfect
-              </div>
-            ) : (
-              <div className={`flex items-center text-sm font-medium gap-1.5 px-3 py-1.5 rounded-full ${remaining < 0 ? 'text-red-600 bg-red-50' : 'text-amber-600 bg-amber-50'}`}>
-                <AlertCircle className="w-4 h-4" /> {remaining < 0 ? 'Too many points' : 'Need more points'}
-              </div>
-            )}
-          </div>
-
-          {/* Questions */}
-          <div className="p-6 md:p-8 space-y-4">
-            {section.questions.map((q) => (
-              <div key={q.id} className="flex items-start gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200 group">
-                <div className="flex-shrink-0 pt-1">
-                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-xs font-bold uppercase group-hover:bg-indigo-100 group-hover:text-indigo-700 transition-colors">
-                    {q.id}
-                  </span>
-                </div>
-                <div className="flex-grow">
-                  <p className="text-slate-700 leading-relaxed">{q.text}</p>
-                </div>
-                <div className="flex-shrink-0">
-                  <input
-                    type="number"
-                    min="0"
-                    max="10"
-                    value={answers[currentStep][q.id] || ''}
-                    onChange={(e) => handleInputChange(currentStep, q.id, e.target.value)}
-                    className="w-16 h-12 text-center text-lg font-semibold bg-slate-100 border-none rounded-lg focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
-                    placeholder="0"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Footer Actions */}
-          <div className="p-6 bg-slate-50 border-t border-slate-200 flex justify-between items-center">
-            <button
-              onClick={handlePrev}
-              disabled={currentStep === 0}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium transition-colors ${currentStep === 0 ? 'text-slate-400 cursor-not-allowed' : 'text-slate-600 hover:bg-slate-200 hover:text-slate-900'}`}
-            >
-              <ChevronLeft className="w-5 h-5" /> Back
-            </button>
-            
-            <button
-              onClick={handleNext}
-              disabled={!isValid}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all ${isValid ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-lg' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
-            >
-              {currentStep === questionnaire.length - 1 ? 'See Results' : 'Next Section'} <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <AssessmentPage
+      step={currentStep}
+      maxVisited={maxVisited}
+      answers={answers}
+      onSetAnswer={setAnswer}
+      onStepChange={goToStep}
+      onContinue={continueAssessment}
+      onHome={() => setCurrentStep(-1)}
+    />
   );
 }
