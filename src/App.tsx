@@ -431,9 +431,10 @@ function ResultPage({
   const topRoles = results.slice(0, 3);
   const maxScore = results[0].score;
   const leaders = results.filter((result) => result.score === maxScore);
+  const article = /^[aeiou]/i.test(topRoles[0].shortName) ? 'an' : 'a';
   const headline = leaders.length > 1
     ? `${leaders.map((item) => item.shortName).join(' + ')} lead your profile`
-    : `You lead as an ${topRoles[0].shortName}`;
+    : `You lead as ${article} ${topRoles[0].shortName}`;
 
   const categoryScores = [
     { name: 'Connect', label: 'People roles', color: '#22B8CF', roles: ['RI', 'TW', 'CO'] as RoleCode[] },
@@ -477,8 +478,8 @@ function ResultPage({
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={results} layout="vertical" margin={{ top: 6, right: 24, left: 6, bottom: 4 }}>
                   <CartesianGrid stroke="#E7EAF0" horizontal={false} strokeDasharray="3 5" />
-                  <XAxis type="number" domain={[0, 70]} tick={{ fill: '#7A8497', fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <YAxis type="category" dataKey="role" width={42} tick={{ fill: '#253047', fontSize: 12, fontWeight: 750 }} axisLine={false} tickLine={false} />
+                  <XAxis type="number" domain={[0, 70]} ticks={[0, 10, 20, 30, 40, 50, 60, 70]} tick={{ fill: '#7A8497', fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="name" width={148} tick={{ fill: '#253047', fontSize: 11, fontWeight: 600 }} axisLine={false} tickLine={false} />
                   <Tooltip content={<ScoreTooltip />} cursor={{ fill: '#F6F8FC' }} />
                   <Bar dataKey="score" radius={[0, 8, 8, 0]} barSize={18}>
                     {results.map((entry) => <Cell key={entry.role} fill={entry.color} />)}
@@ -508,7 +509,7 @@ function ResultPage({
                 </div>
               ))}
             </div>
-            <div className="balance-note"><Lightbulb size={18} /><p>A lower category is not a flaw. It shows where complementary teammates can make the group more versatile.</p></div>
+            <div className="balance-note"><Lightbulb size={18} /><p>A lower score isn't a flaw — it shows where the right teammate can complement you.</p></div>
           </article>
         </section>
 
